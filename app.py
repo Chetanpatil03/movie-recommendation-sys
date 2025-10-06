@@ -188,7 +188,7 @@ def web_series():
         return render_template('category.html', movies=[], category='Web Series', 
                              message="Web Series dataset coming soon!", username=session.get('username'))
     
-    series = webseries.head(20)[['title', 'genre', 'vote_average']].to_dict('records')
+    series = webseries.head(20)[['title', 'genre', 'vote_count']].to_dict('records')
     
     for show in series:
         omdb_data = get_omdb_details(show['title'])
