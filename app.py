@@ -171,7 +171,7 @@ def bollywood():
         return render_template('category.html', movies=[], category='Bollywood', 
                              message="Bollywood dataset coming soon!", username=session.get('username'))
     
-    movies = bollywood_movies.head(20)[['title', 'genre', 'vote_average']].to_dict('records')
+    movies = bollywood_movies.head(20)[['title', 'genre', 'votes']].to_dict('records')
     
     for movie in movies:
         omdb_data = get_omdb_details(movie['title'])
@@ -292,6 +292,41 @@ def movie_detail(movie_title):
     recommendations = recommend_movies(movie_title, dataset, num_recommendations=6)
     
     return render_template('movie_detail.html', movie=movie, recommendations=recommendations, username=session.get('username'))
+
+
+@app.route('/recommend')
+def recommend():
+    if 'username' not in session:
+        return redirect(url_for('welcome'))
+
+    query = request.args.get('q', '')
+    recommendations = []
+    
+    if query:
+        all_movies = get_all_movies()
+        # Find the movie in the combined dataset
+        movie_data = all_movies[all_movies['title'].str.lower() == query.lower()]
+
+        if not movie_data.empty:
+            movie_title = movie_data.iloc[0]['title']
+            # Get the category to use the correct dataset for recommendations
+            category = movie_data.iloc[0].get('category', 'Hollywood')
+            
+            if category == 'Hollywood':
+                dataset = hollywood_movies
+            elif category == 'Bollywood':
+                dataset = bollywood_movies
+            else:
+                dataset = webseries
+            
+            recommendations = recommend_movies(movie_title, dataset, num_recommendations=12)
+
+    return render_template('recommendations.html', recommendations=recommendations, query=query, username=session.get('username'))
+
+@app.context_processor
+def inject_current_path():
+    return {'current_path': request.path}
+
 
 @app.route('/about')
 def about():
