@@ -216,6 +216,7 @@ def search():
     
     return render_template('search.html', movies=movies, query=query, username=session.get('username'))
 
+
 @app.route('/filter')
 def filter_movies():
     if 'username' not in session:
@@ -225,7 +226,7 @@ def filter_movies():
     
     # Get filter parameters
     genre = request.args.get('genre', '')
-    min_rating = request.args.get('min_rating', type=float)
+    min_rating_str = request.args.get('min_rating')
     category = request.args.get('category', '')
     
     filtered = all_movies.copy()
@@ -233,10 +234,15 @@ def filter_movies():
     if genre and 'genre' in filtered.columns:
         filtered = filtered[filtered['genre'].str.contains(genre, case=False, na=False)]
     
-    if min_rating and 'vote_average' in filtered.columns:
-        filtered = filtered[filtered['vote_average'] >= min_rating]
+    if min_rating_str and 'vote_average' in filtered.columns:
+        try:
+            min_rating = float(min_rating_str)
+            numeric_vote_average = pd.to_numeric(filtered['vote_average'], errors='coerce')
+            filtered = filtered[numeric_vote_average >= min_rating]
+        except(ValueError, TypeError):
+            pass
     
-    if category and 'category' in filtered.columns:
+    if category and category.strip() and 'category' in filtered.columns:
         filtered = filtered[filtered['category'] == category]
     
     movies = filtered[['title', 'genre', 'vote_average', 'category']].head(20).to_dict('records')
@@ -245,8 +251,14 @@ def filter_movies():
         omdb_data = get_omdb_details(movie['title'])
         movie['poster'] = omdb_data['poster'] if omdb_data else None
     
-    # Get unique genres for filter dropdown
-    genres = sorted(all_movies['genre'].str.split(',').explode().str.strip().unique().tolist()) if 'genre' in all_movies.columns else []
+    # --- HERE IS THE KEY CHANGE FOR THE NEW ERROR ---
+    # Ensure the genre column is all strings before processing
+    if 'genre' in all_movies.columns:
+        all_movies['genre'] = all_movies['genre'].astype(str)
+        genres = sorted(all_movies['genre'].str.split(',').explode().str.strip().unique().tolist())
+    else:
+        genres = []
+    # --- END OF KEY CHANGE ---
     
     return render_template('filter.html', movies=movies, genres=genres, username=session.get('username'))
 

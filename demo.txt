@@ -1,0 +1,33 @@
+@app.route('/filter')
+def filter_movies():
+    if 'username' not in session:
+        return redirect(url_for('welcome'))
+    
+    all_movies = get_all_movies()
+    
+    # Get filter parameters
+    genre = request.args.get('genre', '')
+    min_rating = request.args.get('min_rating', type=float)
+    category = request.args.get('category', '')
+    
+    filtered = all_movies.copy()
+    
+    if genre and 'genre' in filtered.columns:
+        filtered = filtered[filtered['genre'].str.contains(genre, case=False, na=False)]
+    
+    if min_rating and 'vote_average' in filtered.columns:
+        filtered = filtered[filtered['vote_average'] >= min_rating]
+    
+    if category and category.strip() and 'category' in filtered.columns:
+        filtered = filtered[filtered['category'] == category]
+    
+    movies = filtered[['title', 'genre', 'vote_average', 'category']].head(20).to_dict('records')
+    
+    for movie in movies:
+        omdb_data = get_omdb_details(movie['title'])
+        movie['poster'] = omdb_data['poster'] if omdb_data else None
+    
+    # Get unique genres for filter dropdown
+    genres = sorted(all_movies['genre'].str.split(',').explode().str.strip().unique().tolist()) if 'genre' in all_movies.columns else []
+    
+    return render_template('filter.html', movies=movies, genres=genres, username=session.get('username'))
