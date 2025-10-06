@@ -283,6 +283,7 @@ def movie_detail(movie_title):
     
     # Get recommendations
     category = movie.get('category', 'Hollywood')
+    dataset = pd.DataFrame() # Initialize an empty DataFrame    
     if category == 'Hollywood':
         dataset = hollywood_movies
     elif category == 'Bollywood':
