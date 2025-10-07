@@ -11,6 +11,7 @@ app.secret_key = 'your_secret_key_here_change_it'
 # OMDb API Configuration (You already have this!)
 # OMDB_API_KEY = '41e6a6fc'  # Your existing API key
 OMDB_API_KEY = '90998eb3'  # Your existing API key
+# OMDB_API_KEY = 'e94ca55c'  # Your existing API key prafulla api key
 OMDB_BASE_URL = 'http://www.omdbapi.com/'
 
 # Load datasets
