@@ -64,7 +64,7 @@ My current `dataset.csv` should have these columns:
 
 ### Recommended Datasets to Add
 
-**1. Bollywood Movies Dataset:**
+**1. Hollywood Movies Dataset:**
 - **Source**: [Kaggle - Hollywood Movies](https://www.kaggle.com/datasets)
 - **Search for**: "Hollywood movies dataset" or "Hollywood movies dataset 5000"
 - **Required columns**: title, genre, overview, vote_average, vote_count
